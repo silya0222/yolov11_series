@@ -1,0 +1,32 @@
+# Ultralytics YOLO 🚀, AGPL-3.0 license
+# NEU-DET 钢材表面缺陷数据集配置文件
+# 类别: 6种 (裂纹, 夹杂, 斑点, 麻点, 氧化皮, 划痕)
+
+# 1. 数据集路径配置
+# 建议将数据集放在与代码目录平级的 datasets 文件夹下
+# 目录结构示例:
+# datasets/
+# └── NEU-DET/
+#     ├── images/
+#     │   ├── train/  (训练图片)
+#     │   └── val/    (验证图片)
+#     └── labels/
+#         ├── train/  (YOLO格式标签)
+#         └── val/    (YOLO格式标签)
+
+path: C:\Users\闫司隶\PycharmProjects\ultralytics\dataset\NEU-DET  # 数据集根目录 (可以是绝对路径，也可以是相对于当前运行目录的相对路径)
+train: images/train        # 训练集图片 (相对于 path)
+val: images/val            # 验证集图片 (相对于 path)
+test:                      # 测试集 (可选)
+
+# 2. 类别配置
+nc: 6  # 类别数量 (Number of Classes)
+
+# 3. 类别名称 (必须与 classes.txt 顺序一致)
+names:
+  0: crazing           # 裂纹
+  1: inclusion         # 夹杂
+  2: patches           # 斑点
+  3: pitted_surface    # 麻点/凹坑
+  4: rolled-in_scale   # 氧化皮
+  5: scratches         # 划痕

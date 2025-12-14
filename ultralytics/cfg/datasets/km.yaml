@@ -1,0 +1,10 @@
+path: km # dataset root dir
+train: images/train
+val: images/val
+test: images/test
+
+# Classes
+names:
+  0: zn
+  1: vitamin
+  2: protein

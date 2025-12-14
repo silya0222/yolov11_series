@@ -59,6 +59,9 @@ from .block import (
     ResNetLayer,
     SCDown,
     TorchVision,
+    ASFF,
+    CSE,
+    CST,
 )
 from .conv import (
     CBAM,
@@ -179,4 +182,6 @@ __all__ = (
     "YOLOEDetect",
     "YOLOESegment",
     "v10Detect",
+    "ASFF",
+    "SimAM",
 )

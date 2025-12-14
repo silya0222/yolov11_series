@@ -1,0 +1,62 @@
+# Ultralytics YOLO 11n Improved Model Config
+# CSE + CST + ASFF
+# 修正版：补全 PANet 结构，修正 ASFF 参数
+
+# Parameters
+nc: 80
+scales:
+  n: [0.50, 0.25, 1024]
+
+# YOLO11n backbone
+backbone:
+  # [from, repeats, module, args]
+  - [-1, 1, Conv, [64, 3, 2]]  # 0-P1/2
+  - [-1, 1, Conv, [128, 3, 2]] # 1-P2/4
+  - [-1, 2, C3k2, [256, False, 0.25]]
+  - [-1, 1, Conv, [256, 3, 2]] # 3-P3/8
+  - [-1, 2, C3k2, [512, False, 0.25]]
+
+  # --- 1. CSE ---
+  # P3 特征增强
+  - [-1, 1, CSE, [512]] # 5 (P3_in)
+
+  - [-1, 1, Conv, [512, 3, 2]] # 6-P4/16
+  - [-1, 2, C3k2, [512, True]] # 7 (P4_in)
+  - [-1, 1, Conv, [1024, 3, 2]] # 8-P5/32
+  - [-1, 2, C3k2, [1024, True]] # 9 (P5_in)
+
+  # --- 2. CST ---
+  - [-1, 1, SPPF, [1024, 5]] # 10
+  - [-1, 1, C2PSA, [1024]] # 11
+  - [-1, 1, CST, [1024]]   # 12 (P5_processed)
+
+# YOLO11n Head
+head:
+  # === Top-Down (FPN) ===
+  - [-1, 1, nn.Upsample, [None, 2, 'nearest']] # 13
+  - [[-1, 7], 1, Concat, [1]] # 14 (拼接 Backbone P4)
+  - [-1, 2, C3k2, [512, False]] # 15 (P4_HighRes)
+
+  - [-1, 1, nn.Upsample, [None, 2, 'nearest']] # 16
+  - [[-1, 5], 1, Concat, [1]] # 17 (拼接 Backbone CSE P3)
+  - [-1, 2, C3k2, [256, False]] # 18 (P3_Small 最终输出)
+
+  # === Bottom-Up (PANet) - 之前缺失的部分 ===
+  - [-1, 1, Conv, [256, 3, 2]] # 19 (Downsample P3)
+  - [[-1, 15], 1, Concat, [1]] # 20 (拼接 Layer 15 P4_HighRes)
+  - [-1, 2, C3k2, [512, False]] # 21 (P4_Medium 最终输出)
+
+  - [-1, 1, Conv, [512, 3, 2]] # 22 (Downsample P4)
+  - [[-1, 12], 1, Concat, [1]] # 23 (拼接 Layer 12 P5_processed)
+  - [-1, 2, C3k2, [1024, True]] # 24 (P5_Large 最终输出)
+
+  # === 3. ASFF ===
+  # 输入层为: P3(18), P4(21), P5(24)
+  # args 格式修改为: [输出通道数, level]
+  # 必须显式指定通道数，否则解析代码会误判为 0
+  - [ [ 18, 21, 24 ], 1, ASFF, [ 256, 0 ] ] # 25 - ASFF Level 0 (P3 size)
+  - [ [ 18, 21, 24 ], 1, ASFF, [ 512, 1 ] ] # 26 - ASFF Level 1 (P4 size)
+  - [ [ 18, 21, 24 ], 1, ASFF, [ 1024, 2 ] ] # 27 - ASFF Level 2 (P5 size)
+
+  # Detect
+  - [ [ 25, 26, 27 ], 1, Detect, [ nc ] ] # 28

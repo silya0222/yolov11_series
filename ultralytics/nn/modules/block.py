@@ -52,6 +52,7 @@ __all__ = (
     "ResNetLayer",
     "SCDown",
     "TorchVision",
+    "CBAM",
 )
 
 
@@ -151,15 +152,15 @@ class HGBlock(nn.Module):
     """
 
     def __init__(
-        self,
-        c1: int,
-        cm: int,
-        c2: int,
-        k: int = 3,
-        n: int = 6,
-        lightconv: bool = False,
-        shortcut: bool = False,
-        act: nn.Module = nn.ReLU(),
+            self,
+            c1: int,
+            cm: int,
+            c2: int,
+            k: int = 3,
+            n: int = 6,
+            lightconv: bool = False,
+            shortcut: bool = False,
+            act: nn.Module = nn.ReLU(),
     ):
         """
         Initialize HGBlock with specified parameters.
@@ -471,7 +472,7 @@ class Bottleneck(nn.Module):
     """Standard bottleneck."""
 
     def __init__(
-        self, c1: int, c2: int, shortcut: bool = True, g: int = 1, k: tuple[int, int] = (3, 3), e: float = 0.5
+            self, c1: int, c2: int, shortcut: bool = True, g: int = 1, k: tuple[int, int] = (3, 3), e: float = 0.5
     ):
         """
         Initialize a standard bottleneck module.
@@ -628,7 +629,7 @@ class MaxSigmoidAttnBlock(nn.Module):
 
         aw = torch.einsum("bmchw,bnmc->bmhwn", embed, guide)
         aw = aw.max(dim=-1)[0]
-        aw = aw / (self.hc**0.5)
+        aw = aw / (self.hc ** 0.5)
         aw = aw + self.bias[None, :, None, None]
         aw = aw.sigmoid() * self.scale
 
@@ -642,16 +643,16 @@ class C2fAttn(nn.Module):
     """C2f module with an additional attn module."""
 
     def __init__(
-        self,
-        c1: int,
-        c2: int,
-        n: int = 1,
-        ec: int = 128,
-        nh: int = 1,
-        gc: int = 512,
-        shortcut: bool = False,
-        g: int = 1,
-        e: float = 0.5,
+            self,
+            c1: int,
+            c2: int,
+            n: int = 1,
+            ec: int = 128,
+            nh: int = 1,
+            gc: int = 512,
+            shortcut: bool = False,
+            g: int = 1,
+            e: float = 0.5,
     ):
         """
         Initialize C2f module with attention mechanism.
@@ -711,7 +712,7 @@ class ImagePoolingAttn(nn.Module):
     """ImagePoolingAttn: Enhance the text embeddings with image-aware information."""
 
     def __init__(
-        self, ec: int = 256, ch: tuple[int, ...] = (), ct: int = 512, nh: int = 8, k: int = 3, scale: bool = False
+            self, ec: int = 256, ch: tuple[int, ...] = (), ct: int = 512, nh: int = 8, k: int = 3, scale: bool = False
     ):
         """
         Initialize ImagePoolingAttn module.
@@ -753,7 +754,7 @@ class ImagePoolingAttn(nn.Module):
         """
         bs = x[0].shape[0]
         assert len(x) == self.nf
-        num_patches = self.k**2
+        num_patches = self.k ** 2
         x = [pool(proj(x)).view(bs, -1, num_patches) for (x, proj, pool) in zip(x, self.projections, self.im_pools)]
         x = torch.cat(x, dim=-1).transpose(1, 2)
         q = self.query(text)
@@ -766,7 +767,7 @@ class ImagePoolingAttn(nn.Module):
         v = v.reshape(bs, -1, self.nh, self.hc)
 
         aw = torch.einsum("bnmc,bkmc->bmnk", q, k)
-        aw = aw / (self.hc**0.5)
+        aw = aw / (self.hc ** 0.5)
         aw = F.softmax(aw, dim=-1)
 
         x = torch.einsum("bmnk,bkmc->bnmc", aw, v)
@@ -856,7 +857,7 @@ class RepBottleneck(Bottleneck):
     """Rep bottleneck."""
 
     def __init__(
-        self, c1: int, c2: int, shortcut: bool = True, g: int = 1, k: tuple[int, int] = (3, 3), e: float = 0.5
+            self, c1: int, c2: int, shortcut: bool = True, g: int = 1, k: tuple[int, int] = (3, 3), e: float = 0.5
     ):
         """
         Initialize RepBottleneck.
@@ -1108,7 +1109,7 @@ class C3k2(C2f):
     """Faster Implementation of CSP Bottleneck with 2 convolutions."""
 
     def __init__(
-        self, c1: int, c2: int, n: int = 1, c3k: bool = False, e: float = 0.5, g: int = 1, shortcut: bool = True
+            self, c1: int, c2: int, n: int = 1, c3k: bool = False, e: float = 0.5, g: int = 1, shortcut: bool = True
     ):
         """
         Initialize C3k2 module.
@@ -1280,7 +1281,7 @@ class C2fCIB(C2f):
     """
 
     def __init__(
-        self, c1: int, c2: int, n: int = 1, shortcut: bool = False, lk: bool = False, g: int = 1, e: float = 0.5
+            self, c1: int, c2: int, n: int = 1, shortcut: bool = False, lk: bool = False, g: int = 1, e: float = 0.5
     ):
         """
         Initialize C2fCIB module.
@@ -1330,7 +1331,7 @@ class Attention(nn.Module):
         self.num_heads = num_heads
         self.head_dim = dim // num_heads
         self.key_dim = int(self.head_dim * attn_ratio)
-        self.scale = self.key_dim**-0.5
+        self.scale = self.key_dim ** -0.5
         nh_kd = self.key_dim * num_heads
         h = dim + nh_kd * 2
         self.qkv = Conv(dim, h, 1, act=False)
@@ -1639,7 +1640,7 @@ class TorchVision(nn.Module):
     """
 
     def __init__(
-        self, model: str, weights: str = "DEFAULT", unwrap: bool = True, truncate: int = 2, split: bool = False
+            self, model: str, weights: str = "DEFAULT", unwrap: bool = True, truncate: int = 2, split: bool = False
     ):
         """
         Load the model and weights from torchvision.
@@ -1754,7 +1755,7 @@ class AAttn(nn.Module):
             .permute(0, 2, 3, 1)
             .split([self.head_dim, self.head_dim, self.head_dim], dim=2)
         )
-        attn = (q.transpose(-2, -1) @ k) * (self.head_dim**-0.5)
+        attn = (q.transpose(-2, -1) @ k) * (self.head_dim ** -0.5)
         attn = attn.softmax(dim=-1)
         x = v @ attn.transpose(-2, -1)
         x = x.permute(0, 3, 1, 2)
@@ -1865,17 +1866,17 @@ class A2C2f(nn.Module):
     """
 
     def __init__(
-        self,
-        c1: int,
-        c2: int,
-        n: int = 1,
-        a2: bool = True,
-        area: int = 1,
-        residual: bool = False,
-        mlp_ratio: float = 2.0,
-        e: float = 0.5,
-        g: int = 1,
-        shortcut: bool = True,
+            self,
+            c1: int,
+            c2: int,
+            n: int = 1,
+            a2: bool = True,
+            area: int = 1,
+            residual: bool = False,
+            mlp_ratio: float = 2.0,
+            e: float = 0.5,
+            g: int = 1,
+            shortcut: bool = True,
     ):
         """
         Initialize Area-Attention C2f module.
@@ -2029,3 +2030,148 @@ class SAVPE(nn.Module):
         aggregated = score.transpose(-2, -3) @ x.reshape(B, self.c, C // self.c, -1).transpose(-1, -2)
 
         return F.normalize(aggregated.transpose(-2, -3).reshape(B, Q, -1), dim=-1, p=2)
+
+
+class ASFF(nn.Module):
+    def __init__(self, c1, c2, level=0):
+        super().__init__()
+        self.level = level
+        # 1. 处理输入通道列表
+        self.dim = c1 if isinstance(c1, list) else [c1]
+        self.inter_dim = self.dim[self.level]
+
+        # 2. 压缩通道用于生成权重
+        compress_c = 8 if self.inter_dim >= 16 else 4
+        self.weight_levels = Conv(compress_c * 3, 3, 1, 1)
+        self.weight_level_0 = Conv(self.inter_dim, compress_c, 1, 1)
+        self.weight_level_1 = Conv(self.inter_dim, compress_c, 1, 1)
+        self.weight_level_2 = Conv(self.inter_dim, compress_c, 1, 1)
+        self.vis = False
+
+        # 3. 定义 1x1 卷积，用于统一通道数 (但不改变尺寸)
+        # 注意：这里我们只做通道变换，尺寸变换放 forward 里动态做，更稳健
+        self.conv_0 = Conv(self.dim[0], self.inter_dim, 1, 1)
+        self.conv_1 = Conv(self.dim[1], self.inter_dim, 1, 1)
+        self.conv_2 = Conv(self.dim[2], self.inter_dim, 1, 1)
+
+    def forward(self, x):
+        # x 是列表 [P3, P4, P5]
+
+        # 第一步：先将所有层的通道数，统一调整为当前层的通道数 (inter_dim)
+        feat_0 = self.conv_0(x[0])
+        feat_1 = self.conv_1(x[1])
+        feat_2 = self.conv_2(x[2])
+
+        # 第二步：获取当前层的目标尺寸 (高, 宽)
+        # self.level 是 0, 1, 或 2，对应 x[0], x[1], x[2]
+        target_size = x[self.level].shape[2:]
+
+        # 第三步：统一尺寸 (Resize)
+        # 如果尺寸不一样，就强行缩放到 target_size
+        if feat_0.shape[2:] != target_size:
+            feat_0 = F.interpolate(feat_0, size=target_size, mode='nearest')
+        if feat_1.shape[2:] != target_size:
+            feat_1 = F.interpolate(feat_1, size=target_size, mode='nearest')
+        if feat_2.shape[2:] != target_size:
+            feat_2 = F.interpolate(feat_2, size=target_size, mode='nearest')
+
+        # 第四步：计算融合权重
+        level_0_weight_v = self.weight_level_0(feat_0)
+        level_1_weight_v = self.weight_level_1(feat_1)
+        level_2_weight_v = self.weight_level_2(feat_2)
+
+        # 此时所有 tensor 的尺寸都是 (Batch, compress_c, H, W)，可以放心拼接了
+        levels_weight_v = torch.cat((level_0_weight_v, level_1_weight_v, level_2_weight_v), 1)
+        levels_weight = self.weight_levels(levels_weight_v)
+        levels_weight = F.softmax(levels_weight, dim=1)
+
+        # 第五步：加权融合
+        fused_out = feat_0 * levels_weight[:, 0:1, :, :] + \
+                    feat_1 * levels_weight[:, 1:2, :, :] + \
+                    feat_2 * levels_weight[:, 2:, :, :]
+
+        return fused_out
+
+
+class CSE(nn.Module):
+    """
+    Contextual Squeeze-and-Excitation (CSE) Module.
+    通过全局平均池化捕捉通道上下文信息，增强有效特征，抑制无效特征。
+    """
+
+    def __init__(self, c1, c2, r=16):
+        """
+        Args:
+            c1 (int): 输入通道数
+            c2 (int): 输出通道数 (CSE通常保持通道数不变，这里为了兼容YOLO解析器保留c2参数)
+            r (int): 缩减比率 (Reduction ratio)
+        """
+        super().__init__()
+        # CSE 不改变通道数，所以内部使用 c1。
+        # 如果 c2 != c1，说明配置可能有误，但为了代码健壮性，我们以 c1 为准或打印警告
+
+        # 确保缩减后的通道数至少为 1
+        mid_channels = max(1, c1 // r)
+
+        self.avg_pool = nn.AdaptiveAvgPool2d(1)
+        self.fc = nn.Sequential(
+            nn.Conv2d(c1, mid_channels, kernel_size=1, stride=1, padding=0, bias=False),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(mid_channels, c1, kernel_size=1, stride=1, padding=0, bias=False),
+            nn.Sigmoid()
+        )
+
+    def forward(self, x):
+        # x: [B, C, H, W]
+        # attn: [B, C, 1, 1]
+        attn = self.fc(self.avg_pool(x))
+        return x * attn
+
+
+class CST(nn.Module):
+    """
+    Contextual Spatial Transformer (CST) Module.
+    使用大核深度卷积 (Depthwise Conv) 来捕捉长距离的空间依赖关系，
+    模拟 Transformer 的空间注意力机制，但计算量更低。
+    """
+
+    def __init__(self, c1, c2, k=7, s=1):
+        """
+        Args:
+            c1 (int): 输入通道数
+            c2 (int): 输出通道数
+            k (int): 空间感知卷积核大小 (建议 7, 11 等大核)
+            s (int): 步长
+        """
+        super().__init__()
+        self.c1 = c1
+        self.c2 = c2
+
+        # 1x1 卷积调整通道
+        self.conv1 = nn.Conv2d(c1, c2, kernel_size=1, stride=1, padding=0, bias=False)
+
+        # 大核深度卷积 (Depthwise Convolution)
+        # padding = k // 2 保证尺寸不变
+        self.spatial_conv = nn.Conv2d(
+            c2, c2, kernel_size=k, stride=s, padding=k // 2, groups=c2, bias=False
+        )
+
+        self.act = nn.SiLU()
+
+        # 1x1 卷积融合特征
+        self.conv2 = nn.Conv2d(c2, c2, kernel_size=1, stride=1, padding=0, bias=False)
+
+    def forward(self, x):
+        identity = x
+
+        x = self.conv1(x)
+        x = self.spatial_conv(x)
+        x = self.act(x)
+        x = self.conv2(x)
+
+        # 如果输入输出通道一致且尺寸未变，使用残差连接
+        if self.c1 == self.c2 and x.shape[2:] == identity.shape[2:]:
+            return x + identity
+        return x
+
+
