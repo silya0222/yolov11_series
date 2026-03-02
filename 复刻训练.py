@@ -1,12 +1,21 @@
 import warnings
 
 warnings.filterwarnings('ignore')  # 忽略一些版本警告
+
 from ultralytics import YOLO
+"""
+from ultralytics.nn import modules as u_modules
+from my_ultra.nn.custom_modules import ASFF, CSE, CST
+from my_ultra.nn.losses import MyDetectionLoss
+
+__all__ = ["ASFF", "CSE", "CST", "MyDetectionLoss"]
+
+u_loss.v8DetectionLoss = MyDetectionLoss  # 全局替换
+"""
 import torch
 import numpy as np
 import random
 import os
-
 
 # ==============================================================================
 # 1. 随机种子设置 (Ensuring Reproducibility)
@@ -199,7 +208,7 @@ if __name__ == '__main__':
 
     # 定义两个模型文件
     BASELINE_MODEL = 'yolov11n_baseline.yaml'  # 请确保该文件存在
-    IMPROVED_MODEL = 'yolov11n_improve.yaml'  # 请确保该文件存在
+    #IMPROVED_MODEL = 'yolov11n_improve.yaml'  # 请确保该文件存在
 
     # ==========================================================================
     # 任务 1: 训练 Baseline
@@ -217,7 +226,7 @@ if __name__ == '__main__':
     # 自动保存为 results/yolo11n_improved_v2_001 (如果已存在则为 _002...)
     # 注意：运行改进模型前，请确保已经修改了 ultralytics 源码
     run_training(
-        model_yaml=IMPROVED_MODEL,
+        model_yaml=BASELINE_MODEL,
         project_name=PROJECT_DIR,
         dataset_yaml=DATASET_CFG
     )
