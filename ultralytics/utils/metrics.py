@@ -662,37 +662,8 @@ def plot_pr_curve(
     if 0 < len(names) < 21:  # display per-class legend if < 21 classes
         for i, y in enumerate(py.T):
             ax.plot(px, y, linewidth=1, label=f"{names[i]} {ap[i, 0]:.3f}")  # plot(recall, precision)
-            
-            # --- [修复] 自定义导出: 每个类别的 CSV ---
-            try:
-                import os
-                if 'Pose' in str(save_dir):
-                    os.makedirs('a', exist_ok=True)
-                    with open(f'a/{names[i]}_pose.csv', 'w+') as f:
-                        f.write('\n'.join([f'{px_v},{y_v}'for px_v, y_v in zip(px, y)]))
-                else:
-                    os.makedirs('b', exist_ok=True)
-                    with open(f'b/{names[i]}_Box.csv', 'w+') as f:
-                        for px_v, y_v in zip(px, y):
-                            f.write(f'{px_v},{y_v}\n')
-            except Exception as e:
-                print(f"Warning: Could not save class CSV: {e}")
-            # ------------------------------------------
-
     else:
         ax.plot(px, py, linewidth=1, color="grey")  # plot(recall, precision)
-
-    # --- [修复] 自定义导出: All Classes 的 CSV ---
-    try:
-        import os
-        all_classes_y = py.mean(1)
-        os.makedirs('b', exist_ok=True)
-        with open('b/all_classes_Box.csv', 'w+') as f:
-            for px_v, y_v in zip(px, all_classes_y):
-                f.write(f'{px_v},{y_v}\n')
-    except Exception as e:
-        print(f"Warning: Could not save all_classes CSV: {e}")
-    # ---------------------------------------------
 
     ax.plot(px, py.mean(1), linewidth=3, color="blue", label=f"all classes {ap[:, 0].mean():.3f} mAP@0.5")
     ax.set_xlabel("Recall")
@@ -702,17 +673,6 @@ def plot_pr_curve(
     ax.legend(bbox_to_anchor=(1.04, 1), loc="upper left")
     ax.set_title("Precision-Recall Curve")
     fig.savefig(save_dir, dpi=250)
-    try:
-        import shutil
-        custom_save_dir = Path(r"C:\Users\闫司隶\PycharmProjects\ultralytics\experiment_plots")
-        custom_save_dir.mkdir(parents=True, exist_ok=True)
-        prefix = save_dir.parent.name if save_dir.parent.name else "run"
-        custom_filename = custom_save_dir / f"{prefix}_{save_dir.name}"
-        
-        fig.savefig(custom_filename, dpi=250)
-        print(f" [Custom Save] PR Curve saved to: {custom_filename}")
-    except Exception as e:
-        print(f" [Warning] Failed to save to custom experiment_plots dir: {e}")
     plt.close(fig)
     if on_plot:
         on_plot(save_dir)
@@ -762,7 +722,7 @@ def plot_mc_curve(
     plt.close(fig)
     if on_plot:
         on_plot(save_dir)
-# ... existing code ...
+
 
 def compute_ap(recall: list[float], precision: list[float]) -> tuple[float, np.ndarray, np.ndarray]:
     """
