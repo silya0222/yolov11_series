@@ -1,7 +1,10 @@
 from ultralytics import YOLO
 
 ms = [
-    "yolo11n", "yolo11l", "yolo11m","yolo11s",
+    "yolo11n",
+    "yolo11l",
+    "yolo11m",
+    "yolo11s",
 ]
 
 if __name__ == "__main__":
