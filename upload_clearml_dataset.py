@@ -9,12 +9,15 @@ from clearml import Dataset
 def main() -> None:
     parser = argparse.ArgumentParser(description="Upload a YOLO dataset folder to ClearML Data.")
     parser.add_argument("--project", default="YOLOv11-Datasets", help="ClearML dataset project name.")
-    parser.add_argument("--name", default="km", help="ClearML dataset name.")
+    parser.add_argument("--name", default="km_yolo_dataset", help="ClearML dataset name.")
     parser.add_argument("--version", default="v1", help="ClearML dataset version.")
     parser.add_argument("--folder", default="dataset/km", help="Local dataset root folder.")
     parser.add_argument("--output-uri", default=None, help="Optional storage URI, e.g. s3://bucket/path.")
     parser.add_argument("--description", default="YOLO dataset uploaded from local project.")
     args = parser.parse_args()
+
+    if len(args.name.strip()) < 3:
+        raise ValueError("ClearML dataset name must be at least 3 characters. Use e.g. km_yolo_dataset.")
 
     folder = Path(args.folder).resolve()
     if not folder.exists():

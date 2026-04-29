@@ -210,7 +210,7 @@ if __name__ == '__main__':
     # ==========================================================================
     DATASET_CFG = prepare_yolo_data_yaml(
         dataset_project="YOLOv11-Datasets",
-        dataset_name="km",
+        dataset_name="km_yolo_dataset",
         dataset_version="v1",
         template_yaml="ultralytics/cfg/datasets/km.yaml",
         output_yaml="clearml_km.yaml",
