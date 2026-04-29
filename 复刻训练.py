@@ -218,7 +218,7 @@ if __name__ == '__main__':
     PROJECT_DIR = 'results'  # 结果保存根目录
 
     # 定义两个模型文件
-    BASELINE_MODEL = 'yolov11n_baseline.yaml'  # 请确保该文件存在
+    BASELINE_MODEL = 'ultralytics/cfg/models/11/yolo11.yaml'  # YOLO11 检测模型结构
     #IMPROVED_MODEL = 'yolov11n_improve.yaml'  # 请确保该文件存在
 
     # ==========================================================================

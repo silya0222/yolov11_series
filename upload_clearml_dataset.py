@@ -12,6 +12,12 @@ def main() -> None:
     parser.add_argument("--name", default="km_yolo_dataset", help="ClearML dataset name.")
     parser.add_argument("--version", default="v1", help="ClearML dataset version.")
     parser.add_argument("--folder", default="dataset/km", help="Local dataset root folder.")
+    parser.add_argument(
+        "--include",
+        nargs="+",
+        default=["*.jpg", "*.jpeg", "*.png", "*.txt", "*.yaml", "*.yml"],
+        help="File patterns to upload. Cache files are intentionally excluded by default.",
+    )
     parser.add_argument("--output-uri", default=None, help="Optional storage URI, e.g. s3://bucket/path.")
     parser.add_argument("--description", default="YOLO dataset uploaded from local project.")
     args = parser.parse_args()
@@ -32,6 +38,7 @@ def main() -> None:
     )
     added = dataset.add_files(
         path=str(folder),
+        wildcard=args.include,
         local_base_folder=str(folder),
         dataset_path=".",
         recursive=True,
