@@ -1,3 +1,7 @@
+from clearml import Task
+
+task = Task.init(project_name="my_project", task_name="train_on_windows")
+task.execute_remotely(queue_name="default", clone=False, exit_process=True)
 import warnings
 
 warnings.filterwarnings('ignore')  # 忽略一些版本警告
