@@ -20,6 +20,7 @@ import torch
 import numpy as np
 import random
 import os
+from clearml_data_utils import prepare_yolo_data_yaml
 
 # ==============================================================================
 # 1. 随机种子设置 (Ensuring Reproducibility)
@@ -207,7 +208,13 @@ if __name__ == '__main__':
     # ==========================================================================
     # 配置区
     # ==========================================================================
-    DATASET_CFG = 'NEU-DET.yaml'  # 数据集配置文件
+    DATASET_CFG = prepare_yolo_data_yaml(
+        dataset_project="YOLOv11-Datasets",
+        dataset_name="km",
+        dataset_version="v1",
+        template_yaml="ultralytics/cfg/datasets/km.yaml",
+        output_yaml="clearml_km.yaml",
+    )
     PROJECT_DIR = 'results'  # 结果保存根目录
 
     # 定义两个模型文件
