@@ -1,6 +1,5 @@
 import cv2
 import numpy as np
-import random
 
 
 class DataAugmentor:
@@ -12,7 +11,7 @@ class DataAugmentor:
         【1. 翻转 (Flip)】
         :param image: 输入图像
         :param mode: 翻转模式。1=水平翻转(左右), 0=垂直翻转(上下), -1=水平垂直同时翻转
-        :return: 翻转后的图像
+        :return: 翻转后的图像.
         """
         # cv2.flip 直接进行翻转
         return cv2.flip(image, mode)
@@ -22,7 +21,7 @@ class DataAugmentor:
         【2. 旋转 (Rotation)】
         :param image: 输入图像
         :param angle: 旋转角度（正数逆时针，负数顺时针）
-        :return: 旋转后的图像，边缘填充黑色(0)
+        :return: 旋转后的图像，边缘填充黑色(0).
         """
         h, w = image.shape[:2]
         center = (w // 2, h // 2)
@@ -41,7 +40,7 @@ class DataAugmentor:
         :param image: 输入图像
         :param shift_x: 水平移动比例 (例如 0.1 代表移动宽度的10%)
         :param shift_y: 垂直移动比例
-        :return: 平移后的图像，空出区域填充黑色
+        :return: 平移后的图像，空出区域填充黑色.
         """
         h, w = image.shape[:2]
         tx = shift_x * w
@@ -62,7 +61,7 @@ class DataAugmentor:
         - 如果 scale > 1.0: 放大图像，并裁剪掉超出画布的部分（中心裁剪）。
         :param image: 输入图像
         :param scale_factor: 缩放因子
-        :return: 缩放并保持原尺寸的图像
+        :return: 缩放并保持原尺寸的图像.
         """
         h, w = image.shape[:2]
 
@@ -77,13 +76,13 @@ class DataAugmentor:
             # 缩小模式：计算中心位置并贴图
             pad_x = (w - new_w) // 2
             pad_y = (h - new_h) // 2
-            canvas[pad_y:pad_y + new_h, pad_x:pad_x + new_w] = resized
+            canvas[pad_y : pad_y + new_h, pad_x : pad_x + new_w] = resized
             return canvas
         else:
             # 放大模式：裁剪中心区域
             crop_x = (new_w - w) // 2
             crop_y = (new_h - h) // 2
-            cropped = resized[crop_y:crop_y + h, crop_x:crop_x + w]
+            cropped = resized[crop_y : crop_y + h, crop_x : crop_x + w]
             return cropped
 
     def augment_crop(self, image, crop_ratio=0.8):
@@ -93,7 +92,7 @@ class DataAugmentor:
         也可以理解为 Zoom In。
         :param image: 输入图像
         :param crop_ratio: 裁剪保留的比例 (例如0.8表示保留中间80%的区域)
-        :return: 裁剪并Resize回原大小的图像
+        :return: 裁剪并Resize回原大小的图像.
         """
         h, w = image.shape[:2]
 
@@ -106,7 +105,7 @@ class DataAugmentor:
         x1 = (w - crop_w) // 2
 
         # 执行切片裁剪
-        cropped = image[y1:y1 + crop_h, x1:x1 + crop_w]
+        cropped = image[y1 : y1 + crop_h, x1 : x1 + crop_w]
 
         # 重新Resize回原图大小，以便输入神经网络
         resized = cv2.resize(cropped, (w, h), interpolation=cv2.INTER_LINEAR)
@@ -118,13 +117,13 @@ class DataAugmentor:
         :param image: 输入图像
         :param mean: 噪声均值
         :param var: 噪声方差 (决定噪声的强度)
-        :return: 添加噪声后的图像
+        :return: 添加噪声后的图像.
         """
         # 将图像归一化到 [0, 1] 方便计算
         img_float = image.astype(np.float32) / 255.0
 
         # 生成高斯噪声
-        sigma = var ** 0.5
+        sigma = var**0.5
         noise = np.random.normal(mean, sigma, img_float.shape)
 
         # 叠加噪声
