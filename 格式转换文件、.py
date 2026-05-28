@@ -1,6 +1,6 @@
-import xml.etree.ElementTree as ET
 import os
 import shutil
+import xml.etree.ElementTree as ET
 
 # ================= 1. 配置区域 =================
 
@@ -14,7 +14,7 @@ source_folder_name = "NEU-DET"
 target_folder_name = "NEU-DET"
 
 # 需要处理的子集 (训练集和验证集)
-sets = ['train', 'validation']
+sets = ["train", "validation"]
 
 # 缺陷类别名称 (顺序千万不能错)
 classes = ["crazing", "inclusion", "patches", "pitted_surface", "rolled-in_scale", "scratches"]
@@ -22,10 +22,11 @@ classes = ["crazing", "inclusion", "patches", "pitted_surface", "rolled-in_scale
 
 # ===============================================
 
+
 def convert(size, box):
-    """ 计算坐标转换 (XML -> YOLO) """
-    dw = 1. / size[0]
-    dh = 1. / size[1]
+    """计算坐标转换 (XML -> YOLO)."""
+    dw = 1.0 / size[0]
+    dh = 1.0 / size[1]
     x = (box[0] + box[1]) / 2.0
     y = (box[2] + box[3]) / 2.0
     w = box[1] - box[0]
@@ -38,16 +39,13 @@ def convert(size, box):
 
 
 def make_dir(path):
-    """ 创建文件夹 """
+    """创建文件夹."""
     if not os.path.exists(path):
         os.makedirs(path)
 
 
 def get_image_map(search_dir):
-    """
-    关键函数：地毯式搜索！
-    去 search_dir 文件夹及其所有子文件夹里找图片。
-    返回一个字典：{'文件名(无后缀)': '文件的完整绝对路径'}
+    """关键函数：地毯式搜索！ 去 search_dir 文件夹及其所有子文件夹里找图片。 返回一个字典：{'文件名(无后缀)': '文件的完整绝对路径'}.
     """
     img_map = {}
     # os.walk 会一层层深入所有子文件夹
@@ -70,12 +68,12 @@ def run():
         print(f"--- 正在处理子集: {subset} ---")
 
         # 1. 定义源路径
-        src_img_dir = os.path.join(base_source_path, subset, 'images')
-        src_xml_dir = os.path.join(base_source_path, subset, 'annotations')
+        src_img_dir = os.path.join(base_source_path, subset, "images")
+        src_xml_dir = os.path.join(base_source_path, subset, "annotations")
 
         # 2. 定义目标路径 (YOLO格式)
-        dst_img_dir = os.path.join(base_target_path, 'images', subset)
-        dst_label_dir = os.path.join(base_target_path, 'labels', subset)
+        dst_img_dir = os.path.join(base_target_path, "images", subset)
+        dst_label_dir = os.path.join(base_target_path, "labels", subset)
 
         make_dir(dst_img_dir)
         make_dir(dst_label_dir)
@@ -94,7 +92,7 @@ def run():
             print(f"  [错误] 找不到标注文件夹: {src_xml_dir}")
             continue
 
-        xml_files = [f for f in os.listdir(src_xml_dir) if f.endswith('.xml')]
+        xml_files = [f for f in os.listdir(src_xml_dir) if f.endswith(".xml")]
         count = 0
         missing_count = 0
 
@@ -103,33 +101,37 @@ def run():
 
             # 1. 转换标签 (XML -> TXT)
             in_file_path = os.path.join(src_xml_dir, filename)
-            out_file_path = os.path.join(dst_label_dir, file_id + '.txt')
+            out_file_path = os.path.join(dst_label_dir, file_id + ".txt")
 
             try:
-                in_file = open(in_file_path, encoding='utf-8')
+                in_file = open(in_file_path, encoding="utf-8")
                 tree = ET.parse(in_file)
                 root = tree.getroot()
 
-                size = root.find('size')
-                w = int(size.find('width').text)
-                h = int(size.find('height').text)
+                size = root.find("size")
+                w = int(size.find("width").text)
+                h = int(size.find("height").text)
 
                 if w == 0 or h == 0:
                     print(f"  [警告] {filename} 宽高为0，跳过")
                     in_file.close()
                     continue
 
-                out_file = open(out_file_path, 'w', encoding='utf-8')
-                for obj in root.iter('object'):
-                    cls = obj.find('name').text
+                out_file = open(out_file_path, "w", encoding="utf-8")
+                for obj in root.iter("object"):
+                    cls = obj.find("name").text
                     if cls not in classes:
                         continue
                     cls_id = classes.index(cls)
-                    xmlbox = obj.find('bndbox')
-                    b = (float(xmlbox.find('xmin').text), float(xmlbox.find('xmax').text),
-                         float(xmlbox.find('ymin').text), float(xmlbox.find('ymax').text))
+                    xmlbox = obj.find("bndbox")
+                    b = (
+                        float(xmlbox.find("xmin").text),
+                        float(xmlbox.find("xmax").text),
+                        float(xmlbox.find("ymin").text),
+                        float(xmlbox.find("ymax").text),
+                    )
                     bb = convert((w, h), b)
-                    out_file.write(str(cls_id) + " " + " ".join([str(a) for a in bb]) + '\n')
+                    out_file.write(str(cls_id) + " " + " ".join([str(a) for a in bb]) + "\n")
 
                 out_file.close()
                 in_file.close()
@@ -156,7 +158,7 @@ def run():
             print(f"  -> 有 {missing_count} 个XML没找到对应的图片。")
         print("-" * 30)
 
-    print(f"\n✅ 全部完成！")
+    print("\n✅ 全部完成！")
     print(f"新数据集保存在: {base_target_path}")
     print("现在的结构是 YOLO 标准格式 (images 和 labels 文件夹)，可以直接拿去训练了。")
 
