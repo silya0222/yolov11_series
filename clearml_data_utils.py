@@ -22,7 +22,7 @@ def prepare_yolo_data_yaml(
     )
     dataset_root = Path(dataset.get_local_copy()).resolve()
 
-    with open(template_yaml, "r", encoding="utf-8") as f:
+    with open(template_yaml, encoding="utf-8") as f:
         data_cfg = yaml.safe_load(f)
 
     data_cfg["path"] = dataset_root.as_posix()
